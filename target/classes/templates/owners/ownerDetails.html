@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{fragments/layout :: layout (~{::body},'owners')}">
+
+  <body>
+  
+  
+    <h2>Owner Information</h2>
+  
+  
+    <table class="table table-striped" th:object="${owner}">
+      <tr>
+        <th>Name</th>
+        <td><b th:text="*{firstName + ' ' + lastName}"></b></td>
+      </tr>
+      <tr>
+        <th>Address</th>
+        <td th:text="*{address}" /></td>
+      </tr>
+      <tr>
+        <th>City</th>
+        <td th:text="*{city}" /></td>
+      </tr>
+      <tr>
+        <th>Telephone</th>
+        <td th:text="*{telephone}" /></td>
+      </tr>
+    </table>
+  
+    <a th:href="@{{id}/edit(id=${owner.id})}" class="btn btn-default">Edit
+      Owner</a>
+    <a th:href="@{{id}/pets/new(id=${owner.id})}" class="btn btn-default">Add
+      New Pet</a>
+  
+    <br />
+    <br />
+    <br />
+    <h2>Pets and Visits</h2>
+  
+    <table class="table table-striped">
+  
+      <tr th:each="pet : ${owner.pets}">
+        <td valign="top">
+          <dl class="dl-horizontal">
+            <dt>Name</dt>
+            <dd th:text="${pet.name}" /></dd>
+            <dt>Birth Date</dt>
+            <dd
+              th:text="${#temporals.format(pet.birthDate, 'yyyy-MM-dd')}" /></dd>
+            <dt>Type</dt>
+            <dd th:text="${pet.type}" /></dd>
+          </dl>
+        </td>
+        <td valign="top">
+          <table class="table-condensed">
+            <thead>
+              <tr>
+                <th>Visit Date</th>
+                <th>Description</th>
+                <th>Vet</th>
+                <th>Modify</th>
+              </tr>
+            </thead>
+            <tr th:each="visit : ${pet.visits}">
+              <td th:text="${#temporals.format(visit.date, 'yyyy-MM-dd')}"></td>
+              <td th:text="${visit?.description}"></td>
+              <td th:if="${visit?.vet == null}">===NOT SELECTED===</td>
+              <td th:unless="${visit?.vet == null}" th:text="${visit.vet.firstName + ' ' + visit.vet.lastName}">===NOT SELECTED===</td>
+              <td th:if="${visit?.aborted == false}"><button th:onclick="'document.location.href=\'' + ${owner.id} + '/visits/' + ${visit.id} + '\''">Modify</button></td>
+              <td>
+                  <p th:if="${visit?.aborted == true}" style="background-color: red">ABORTED</p>
+                  <button th:if="${visit?.aborted == false}" th:onclick="'confirmAction(\'' + ${owner.id} + '/visits/' + ${visit.id} + '/cancel\', \'Cancel visit?\')'">Abort
+                      <script>
+                          function confirmAction(location, msg)
+                          {
+                              if (confirm(msg)) {
+                                  var xhr = new XMLHttpRequest();
+                                  xhr.open('PUT', location, false);
+                                  xhr.setRequestHeader('Content-type', 'text/html');
+                                  xhr.send();
+                                  alert(xhr.responseText)
+                                  window.location.href = window.location.pathname + window.location.search + window.location.hash;
+                              }
+                          }
+                      </script>
+                  </button>
+              </td>
+            </tr>
+            <tr>
+              <td><a
+                th:href="@{{ownerId}/pets/{petId}/edit(ownerId=${owner.id},petId=${pet.id})}">Edit
+                  Pet</a></td>
+              <td><a
+                th:href="@{{ownerId}/pets/{petId}/visits/new(ownerId=${owner.id},petId=${pet.id})}">Add
+                  Visit</a></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+  
+    </table>
+  
+  </body>
+
+</html>
